@@ -81,3 +81,12 @@ if __name__ == '__main__':
         plot_grayscale_img(gamma_corrected_img, title="Gamma = " + str(gamma))
         plot_grayscale_hist(gamma_corrected_img, title="Gamma = " + str(gamma))
 
+
+    start_second = 45
+    end_second = 48
+    color_frame_time = np.random.randint(start_second, end_second + 1)
+    frame_set = video_to_frames(vid_path, color_frame_time, color_frame_time)
+    img = frame_set[0]
+    plt.imshow(cv2.cvtColor(img, cv2.COLOR_BGR2RGB))
+    plt.title("Selected color image from time section " + str(color_frame_time))
+    plt.show()
