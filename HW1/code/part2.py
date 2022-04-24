@@ -6,20 +6,26 @@ from scipy.fftpack import ifftshift
 
 
 def max_freq_filtering(fshift, precentege):
- """
- Reconstruct an image using only its maximal amplitude frequencies.
- :param fshift: The fft of an image, **after fftshift** -
- complex float ndarray of size [H x W].
- :param precentege: the wanted precentege of maximal frequencies.
- :return:
- fMaxFreq: The filtered frequency domain result -
- complex float ndarray of size [H x W].
- imgMaxFreq: The filtered image - real float ndarray of size [H x W].
- """
- # ====== YOUR CODE: ======
-
- # ========================
- return fMaxFreq, imgMaxFreq
+    """
+    Reconstruct an image using only its maximal amplitude frequencies.
+    :param fshift: The fft of an image, **after fftshift** -
+    complex float ndarray of size [H x W].
+    :param precentege: the wanted precentege of maximal frequencies.
+    :return:
+    fMaxFreq: The filtered frequency domain result -
+    complex float ndarray of size [H x W].
+    imgMaxFreq: The filtered image - real float ndarray of size [H x W].
+    """
+    # ====== YOUR CODE: ======
+    flat_fshift = fshift.ravel()
+    k = int((precentege/100)*fshift.size)
+    fMaxFreq_indices = np.argpartition(np.abs(flat_fshift),-k)[-k:]
+    fMaxFreq = flat_fshift[fMaxFreq_indices]
+    flat_imgMaxFreq = np.zeros_like(flat_fshift)
+    flat_imgMaxFreq[fMaxFreq_indices] = flat_fshift[fMaxFreq_indices]
+    imgMaxFreq = np.reshape(flat_imgMaxFreq, fshift.shape)
+    # ========================
+    return fMaxFreq, imgMaxFreq
 
 
 
@@ -76,4 +82,15 @@ if __name__ == '__main__':
     axs[0].set_title("Reconstructed (1)")
     axs[1].set_title("Reconstructed (2)")
     axs[2].set_title("Reconstructed (3)")
+    plt.show()
+
+    max_freqs, max_filtered_dft_img = max_freq_filtering(shifted_dft_img, 10)
+    plt.imshow(np.log(1 + np.abs(max_filtered_dft_img)), "gray")
+    plt.title("Max pass frequency filtering")
+    plt.show()
+
+    max_filtered_dft_img_not_centered = np.fft.ifftshift(max_filtered_dft_img)
+    max_filtered_reconstructed = np.abs(np.fft.ifft2(max_filtered_dft_img_not_centered))
+    plt.imshow(max_filtered_reconstructed, "gray")
+    plt.title("Max pass frequency filtering - reconstructed")
     plt.show()
