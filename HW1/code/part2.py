@@ -31,19 +31,23 @@ def max_freq_filtering(fshift, precentege):
 
 
 if __name__ == '__main__':
+    # section a
     img_path = "HW1\\my_data\\building.jpg"
     img = cv2.imread(img_path)
     grayscale_img = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
     print(img.dtype)
+    plt.imshow(grayscale_img, "gray")
+    plt.title("Grayscale image of a Tehcnion building")
+    plt.show()
 
-
+    # section b
     dft_img = np.fft.fft2(grayscale_img)
     shifted_dft_img = np.fft.fftshift(dft_img)
     plt.imshow(np.log(1 + np.abs(shifted_dft_img)), "gray")
-    plt.title("2D-DFT of Tehcnion building")
+    plt.title("2D-DFT of a Tehcnion building")
     plt.show()
 
-
+    # section c
     center_row_idx = shifted_dft_img.shape[0]//2
     center_col_idx = shifted_dft_img.shape[1]//2
     number_of_passed_freq_k = int(0.02*shifted_dft_img.shape[0])
@@ -84,6 +88,7 @@ if __name__ == '__main__':
     axs[2].set_title("Reconstructed (3)")
     plt.show()
 
+    # section d
     max_freqs, max_filtered_dft_img = max_freq_filtering(shifted_dft_img, 10)
     plt.imshow(np.log(1 + np.abs(max_filtered_dft_img)), "gray")
     plt.title("Max pass frequency filtering")
@@ -94,3 +99,19 @@ if __name__ == '__main__':
     plt.imshow(max_filtered_reconstructed, "gray")
     plt.title("Max pass frequency filtering - reconstructed")
     plt.show()
+
+    # section e
+
+    max_freqs, max_filtered_dft_img = max_freq_filtering(shifted_dft_img, 4)
+    max_filtered_dft_img_not_centered = np.fft.ifftshift(max_filtered_dft_img)
+    max_filtered_reconstructed = np.abs(np.fft.ifft2(max_filtered_dft_img_not_centered))
+
+    fig, axs = plt.subplots(1, 3)
+    axs[0].imshow(grayscale_img, "gray")
+    axs[1].imshow(max_filtered_reconstructed, "gray")
+    axs[2].imshow(lk_reconstructed, "gray")
+    axs[0].set_title("Original grayscale image")
+    axs[1].set_title("Max pass frequency filtering - reconstructed")
+    axs[2].set_title("Low pass frequency filtering - reconstructed")
+    plt.show()
+    
