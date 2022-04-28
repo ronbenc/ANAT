@@ -3,6 +3,7 @@ import cv2
 import numpy as np
 from matplotlib import pyplot as plt
 from scipy.fftpack import ifftshift
+from sklearn.metrics import mean_squared_error
 
 
 def max_freq_filtering(fshift, precentege):
@@ -26,8 +27,6 @@ def max_freq_filtering(fshift, precentege):
     imgMaxFreq = np.reshape(flat_imgMaxFreq, fshift.shape)
     # ========================
     return fMaxFreq, imgMaxFreq
-
-
 
 
 if __name__ == '__main__':
@@ -115,3 +114,19 @@ if __name__ == '__main__':
     axs[2].set_title("Low pass frequency filtering - reconstructed")
     plt.show()
     
+    # section f
+    MSE_p = []
+    for p in range(1, 101):
+        max_freqs, max_filtered_dft_img = max_freq_filtering(shifted_dft_img, p)
+        max_filtered_dft_img_not_centered = np.fft.ifftshift(max_filtered_dft_img)
+        max_filtered_reconstructed = np.abs(np.fft.ifft2(max_filtered_dft_img_not_centered))
+        curr_p_MSE = mean_squared_error(grayscale_img, max_filtered_reconstructed)
+        MSE_p.append(curr_p_MSE)
+
+    plt.plot(range(1, 101), MSE_p)
+    plt.xlim([1, 100])
+    plt.xlabel("p")
+    plt.ylabel("MSE")
+    plt.title("MSE as a function of p")
+    plt.axhline(y = 0, color = 'r')
+    plt.show()
