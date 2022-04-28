@@ -1,6 +1,8 @@
 import cv2
 import numpy as np
 from matplotlib import pyplot as plt
+import cmath
+import math
 
 if __name__ == '__main__':
     # section a
@@ -43,3 +45,17 @@ if __name__ == '__main__':
     plt.show()
 
     # part c
+    v_rect = np.vectorize(cmath.rect)
+    selfie_amp_parrot_phase_dft = v_rect(amp_selfie_img, phase_parrot_img)
+    parrot_amp_parrpt_phase_dft = v_rect(amp_parrot_img, phase_selfie_img)
+  
+    selfie_amp_parrot_phase_reconstructed = np.abs(np.fft.ifft2(selfie_amp_parrot_phase_dft))
+    parrot_amp_parrpt_phase_reconstructed = np.abs(np.fft.ifft2(parrot_amp_parrpt_phase_dft))
+    fig, axs = plt.subplots(1, 2)
+    axs[0].imshow(selfie_amp_parrot_phase_reconstructed, "gray")
+    axs[1].imshow(parrot_amp_parrpt_phase_reconstructed, "gray")
+    axs[0].set_title("amplitude of selfie and the phase of parrot")
+    axs[1].set_title("amplitude of parrot and the phase of selfie")
+    plt.show()
+
+
