@@ -2,7 +2,6 @@ import cv2
 import numpy as np
 from matplotlib import pyplot as plt
 import cmath
-import math
 
 if __name__ == '__main__':
     # section a
@@ -51,6 +50,7 @@ if __name__ == '__main__':
   
     selfie_amp_parrot_phase_reconstructed = np.abs(np.fft.ifft2(selfie_amp_parrot_phase_dft))
     parrot_amp_parrpt_phase_reconstructed = np.abs(np.fft.ifft2(parrot_amp_parrpt_phase_dft))
+
     fig, axs = plt.subplots(1, 2)
     axs[0].imshow(selfie_amp_parrot_phase_reconstructed, "gray")
     axs[1].imshow(parrot_amp_parrpt_phase_reconstructed, "gray")
@@ -58,4 +58,20 @@ if __name__ == '__main__':
     axs[1].set_title("amplitude of parrot and the phase of selfie")
     plt.show()
 
+    # part d
+    rand_phase = np.random.uniform(low = -cmath.pi, high = cmath.pi)
+    rand_amp = np.random.uniform(low = 1, high = 1)
+
+    selfie_amp_rand_phase_dft = v_rect(amp_selfie_img, rand_phase)
+    rand_amp_selfie_phase_dft = v_rect(rand_amp, phase_selfie_img)
+
+    selfie_amp_rand_phase_reconstructed = np.abs(np.fft.ifft2(selfie_amp_rand_phase_dft))
+    rand_amp_selfie_phase_reconstructed = np.abs(np.fft.ifft2(rand_amp_selfie_phase_dft))
+
+    fig, axs = plt.subplots(1, 2)
+    axs[0].imshow(selfie_amp_rand_phase_reconstructed, "gray")
+    axs[1].imshow(rand_amp_selfie_phase_reconstructed, "gray")
+    axs[0].set_title("amplitude of selfie and random phase ~ U[-pi, pi]")
+    axs[1].set_title("random amplitude ~ U[0, 10] and the phase of selfie")
+    plt.show()
 

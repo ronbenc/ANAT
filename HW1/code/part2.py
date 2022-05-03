@@ -38,9 +38,10 @@ if __name__ == '__main__':
     plt.show()
 
     # section b
+    custom_extent = [-grayscale_img.shape[1]//2, grayscale_img.shape[1]//2, -grayscale_img.shape[0]//2, grayscale_img.shape[0]//2]
     dft_img = np.fft.fft2(grayscale_img)
     shifted_dft_img = np.fft.fftshift(dft_img)
-    plt.imshow(np.log(1 + np.abs(shifted_dft_img)), "gray")
+    plt.imshow(np.log(1 + np.abs(shifted_dft_img)), "gray", extent=custom_extent)
     plt.title("2D-DFT of a Tehcnion building")
     plt.show()
 
@@ -61,9 +62,9 @@ if __name__ == '__main__':
     lk_filtered_dft[center_row_idx-number_of_passed__freq_l//2: center_row_idx+number_of_passed__freq_l//2, :] = shifted_dft_img[center_row_idx-number_of_passed__freq_l//2: center_row_idx+number_of_passed__freq_l//2, :]
 
     fig, axs = plt.subplots(1, 3)
-    axs[0].imshow(np.log(1 + np.abs(l_filtered_dft)), "gray")
-    axs[1].imshow(np.log(1 + np.abs(k_filtered_dft)), "gray")
-    axs[2].imshow(np.log(1 + np.abs(lk_filtered_dft)), "gray")
+    axs[0].imshow(np.log(1 + np.abs(l_filtered_dft)), "gray", extent=custom_extent)
+    axs[1].imshow(np.log(1 + np.abs(k_filtered_dft)), "gray", extent=custom_extent)
+    axs[2].imshow(np.log(1 + np.abs(lk_filtered_dft)), "gray", extent=custom_extent)
     axs[0].set_title("(1)")
     axs[1].set_title("(2)")
     axs[2].set_title("(3)")
@@ -87,7 +88,7 @@ if __name__ == '__main__':
 
     # section d
     max_freqs, max_filtered_dft_img = max_freq_filtering(shifted_dft_img, 10)
-    plt.imshow(np.log(1 + np.abs(max_filtered_dft_img)), "gray")
+    plt.imshow(np.log(1 + np.abs(max_filtered_dft_img)), "gray", extent=custom_extent)
     plt.title("Max pass frequency filtering")
     plt.show()
 
@@ -102,6 +103,10 @@ if __name__ == '__main__':
     max_freqs, max_filtered_dft_img = max_freq_filtering(shifted_dft_img, 4)
     max_filtered_dft_img_not_centered = np.fft.ifftshift(max_filtered_dft_img)
     max_filtered_reconstructed = np.abs(np.fft.ifft2(max_filtered_dft_img_not_centered))
+
+    plt.imshow(np.log(1 + np.abs(max_filtered_dft_img)), "gray", extent=custom_extent)
+    plt.title("Max pass frequency filtering for 4 precent")
+    plt.show()
 
     fig, axs = plt.subplots(1, 3)
     axs[0].imshow(grayscale_img, "gray")

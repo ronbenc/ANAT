@@ -50,7 +50,7 @@ def gamma_correction(img, gamma):
     uint8 ndarray of size [H x W x 1].
     """
     # ====== YOUR CODE: ======
-    gamma_img = np.power(img, gamma)
+    gamma_img = 255*(np.power(img/255, gamma))
     # ========================
     return gamma_img
 
@@ -104,7 +104,7 @@ if __name__ == '__main__':
     frame_set = video_to_frames(vid_path, start_second, end_second)
     img = frame_set[0]
     grayscale_img = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
-    plot_grayscale_img(grayscale_img, title="Grayscale Image")
+    plot_grayscale_img(grayscale_img, title="Grayscale Image of 8th second frame")
     plot_grayscale_hist(grayscale_img, title="Grayscale Histogram")
 
     for gamma in [0.5, 1.5]:
@@ -118,7 +118,7 @@ if __name__ == '__main__':
     frame_set = video_to_frames(vid_path, start_second, end_second)
     color_frame_idx = np.random.randint(75)
     img = frame_set[color_frame_idx]
-    plot_color_img(img, title="Selected color image from")
+    plot_color_img(img, title="Selected color image from frame numer " + str(45*25 + color_frame_idx))
 
     meam_img = frames_mean(frame_set)
     median_img = frames_median(frame_set)
