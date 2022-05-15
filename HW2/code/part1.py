@@ -23,13 +23,16 @@ def video_to_frames(vid_path: str, start_second, end_second):
 
     start_frame_idx = int(start_second * FPS)
     end_frame_idx = int(end_second * FPS)
+
+    if start_frame_idx == end_frame_idx:
+        frame_set = np.empty((1, H, W, 3), np.dtype('uint8'))
     
-    frame_set = np.empty((end_frame_idx - start_frame_idx + 1, H, W, 3), np.dtype('uint8'))
+    frame_set = np.empty((end_frame_idx - start_frame_idx, H, W, 3), np.dtype('uint8'))
 
     fc = 0
     ret = True
 
-    while (fc <= end_frame_idx and ret):
+    while (fc < end_frame_idx and ret):
         ret, frame = vidCap.read()
         if fc >= start_frame_idx:
             frame_set[fc-start_frame_idx] = frame
@@ -41,34 +44,6 @@ def video_to_frames(vid_path: str, start_second, end_second):
 
     return frame_set
 
-    
-# def video_to_frames(vid_path: str, start_second, end_second):
-#         """
-#         Load a video and return its frames from the wanted time range.
-#         :param vid_path: video file path.
-#         :param start_second: time of first frame to be taken from the
-#         video in seconds.
-#         :param end_second: time of last frame to be taken from the
-#         video in seconds.
-#         :return:
-#         frame_set: a 4D uint8 np array of size [num_of_frames x H x W x C]
-#         containing the wanted video frames in BGR format.
-#         """
-#         vid_cap = cv2.VideoCapture(vid_path)
-#         frameCount = end_second - start_second
-#         frameWidth = int(vid_cap.get(cv2.CAP_PROP_FRAME_WIDTH))
-#         frameHeight = int(vid_cap.get(cv2.CAP_PROP_FRAME_HEIGHT))
-#         frame_set = np.empty((frameCount, frameHeight, frameWidth, 3), np.dtype('uint8'))
-#         i = 0
-#         while True:
-#                 ret, frame = vid_cap.read()
-#                 if (i >= start_second) and (i < end_second):
-#                         frame_set[i-start_second] = frame
-#                 if (i > end_second):
-#                         vid_cap.release()
-#                         break
-#                 i += 1
-#         return frame_set
 
 # 1.a - Find High Correlation Location:
 def transform(img: np.ndarray)->np.ndarray:
@@ -93,14 +68,9 @@ def match_corr(corr_obj, img):
     img = np.asanyarray(img, np.float32)
 
     max_obj = cv2.filter2D(src=corr_obj, ddepth = -1, kernel=corr_obj, borderType=cv2.BORDER_CONSTANT)
-    min_val, max_val, match_coord, max_loc = cv2.minMaxLoc(max_obj)
+    min_val, max_val, min_loc, max_loc = cv2.minMaxLoc(max_obj)
     res = cv2.filter2D(src=img, ddepth = -1, kernel=corr_obj, borderType=cv2.BORDER_CONSTANT)
-    # plt.imshow(np.abs(res-max_obj))
-    # plt.show()
-
     min_val, max_val, match_coord, max_loc = cv2.minMaxLoc(np.abs(res-max_val))
-
-
     # ========================
     return match_coord
 
@@ -114,14 +84,17 @@ def main():
         transformed_frames_lst.append(transform(gray_frame))
 
     transformed_frames = np.asarray(transformed_frames_lst)
+    print(transformed_frames.shape)
+
     
     # 1.c - Creating the panorama base
     early_frame_idx, ref_frame_idx, late_frame_idx = 20, 130, 200
-
+    # TODO - fitting images  
     h,w = transformed_frames[0].shape
-    panorama = np.zeros((h, int(w * 2.5)), np.uint8)
+    p_w = int(w * 2.5)
+    panorama = np.zeros((h, p_w), np.float32)
     ref_frame = transformed_frames[ref_frame_idx]
-    panorama[:, int(((w * 2.5)//2)-w/2): int(((w * 2.5)//2)+w/2)] = ref_frame
+    panorama[:, int((p_w//2)-w/2): int((p_w//2)+w/2)] = ref_frame
     early_frame = transformed_frames[early_frame_idx]
     late_frame = transformed_frames[late_frame_idx]
 
@@ -144,8 +117,10 @@ def main():
     axs[2].set_axis_off()
     plt.show()
     # 1.d - Frames matching
-    late_sub = late_frame[:,int(w*(4/5)):]
-    early_sub = early_frame[:, :int(w/5)]
+    sub_img_portion = 1/5
+
+    late_sub = late_frame[:,int(w*(1-sub_img_portion)):]
+    early_sub = early_frame[:, :int(w*sub_img_portion)]
 
     corr_early_cor = match_corr(early_sub, ref_frame)
     corr_late_cor = match_corr(late_sub, ref_frame)
@@ -163,22 +138,30 @@ def main():
     ref_start = int(0.75 * w ) 
     ref_end = int(0.75 * w ) + w
     
-    late_start = ref_start + corr_late_cor[0] + int(w/10) - w
-    late_end = ref_start + corr_late_cor[0] + int(w/10)
 
-    early_start = ref_start + corr_late_cor[0] - int(w/10)
-    early_end = ref_start + corr_late_cor[0] - int(w/10) + w
 
-    panorama = np.asanyarray(panorama, np.float32)
-    late_frame = np.asanyarray(late_frame, np.float32)
-    # panorama[: , int(0.75 * w ) + corr_late_cor[0] + int(w/10) - w : int(0.75 * w ) + corr_late_cor[0] + int(w/10)] += 255
-    
-    panorama[: , late_start : late_end] += late_frame
+    early_start = ref_start + corr_late_cor[0] - int(sub_img_portion/2)
+    early_end = early_start + w
+
+    if early_end >int(2.5*w):
+        early_src_end = w - (early_end - int(2.5*w))
+        early_end = int(2.5*w)
+    else:
+        early_src_end = w
+
+    late_start = ref_start + corr_late_cor[0] + int(sub_img_portion/2) - w
+    late_end = late_start + w
+
+    if late_start < 0:
+        late_src_start = -late_start
+        late_start = 0
+    else:
+        late_src_start = 0
+
+    panorama[: , late_start : late_end] += late_frame[:, late_src_start:]
     panorama[:, ref_start : late_end] //= 2
-    panorama[: , early_start: early_end] += early_frame
+    panorama[: , early_start: early_end] += early_frame[:, :early_src_end]
     panorama[:, early_start : ref_end] //= 2
-    # panorama[:, int(0.75 * w ): int(0.75 * w ) + corr_late_cor[1] + int(w/10)] = 0
-    # panorama[: , int(1.25 * w ) + corr_early_cor[1] - int(w/10) : int(1.25 * w ) + corr_early_cor[1] - int(w/10) + w] += early_frame
     
     fig = plt.figure(figsize=(8, 5))
     plt.imshow(panorama, "gray")
