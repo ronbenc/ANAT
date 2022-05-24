@@ -105,7 +105,6 @@ def main():
     plt.show()
 
     fig, axs = plt.subplots(1,3)
-
     axs[0].imshow(early_frame, "gray")
     axs[0].set_title("Early Image")
     axs[0].set_axis_off()
